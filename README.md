@@ -1,2 +1,2 @@
 # DynDNS
-A dynamic DNS server with Bind support
+Provides a simple HTTP API and allows your Bind to act as a dynamic DNS server.

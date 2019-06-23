@@ -1,0 +1,43 @@
+# apt-get install sqlite3 make gcc git
+
+# useradd -c "Dynamic DNS Site" -m -s /bin/bash dyndns
+# passwd dyndns
+
+
+# su -l dyndns
+
+$ curl -L http://install.perlbrew.pl | bash
+$ nano ~/.bash_profile
+source ~/perl5/perlbrew/etc/bashrc
+
+$ exit
+# su -l dyndns
+
+$ perlbrew available
+$ perlbrew install perl-5.20.0
+$ perlbrew switch perl-5.20.0
+$ cpan App::cpanminus
+$ cpanm DBD::SQLite
+$ cpanm Data::Validate::IP
+
+$ git clone -v ssh://dyndns@git.vitalkadrug.ru/opt/gitrepo/DynDns.git dyn_dns
+$ cd dyn_dns
+$ sqlite3 domains.db
+sqlite> .read doc/domains.sql
+sqlite> .quit
+$ ~/dyn_dns/doc/mkmojo.sh ~/mojo
+$ ~/mojo/env.sh morbo ~/dyn_dns/script/dyn_dns
+
+Start in the debug mode:
+$ ~/mojo/env.sh morbo -v -w ~/dyn_dns/lib/ -w ~/dyn_dns/script/ -w ~/dyn_dns/public/ -w ~/dyn_dns/templates/ ~/dyn_dns/script/dyn_dns
+
+
+Start in the production mode:
+$ ~/mojo/env.sh ~/dyn_dns/script/dyn_dns prefork -w 2 -p -c 16 -A 64 --mode production -l http://127.0.0.1:3001
+
+
+To update BIND zones you need to add the following task to cron:
+
+# nano /etc/cron.d/zone_updater
+
+* * * * * root if [ -x /home/dyndns/dyn_dns/bin/zone_updater.pl ] ; then su -l -c "/home/dyndns/dyn_dns/bin/zone_updater.pl" dyndns || /usr/sbin/rndc reload; fi
